@@ -16,7 +16,7 @@ namespace VaccancyAnalizer.LLM_models.UI
         private void SetupBut_Click(object sender, EventArgs e)
         {
             llm = new InstructLLM(@"F:\LLM_models\TheBloke\Llama-2-7B-32K-Instruct-GGUF/llama-2-7b-32k-instruct.Q4_K_S.gguf",
-                antiPrompts: new List<string>() { "Finish"});
+                antiPrompts: new List<string>() { "Finish", "[INST]", "[finish]", "###" });
                 OnLMChanged?.Invoke(llm);
                 SetupBut.Enabled = false;
         }

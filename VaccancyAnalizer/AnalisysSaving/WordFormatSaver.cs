@@ -16,6 +16,11 @@ namespace VaccancyAnalizer.AnalisysSaving
         public void SaveAnalysis(Analysis analysis, bool overwrite = true)
         {
             string filePath = $"{savePath}\\{analysis.query}.docx";
+            string directory = Path.GetDirectoryName(filePath)!;
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
             if (File.Exists(filePath))
             {
                 if (overwrite) File.Delete(filePath);

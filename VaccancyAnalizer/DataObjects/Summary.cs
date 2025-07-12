@@ -18,14 +18,15 @@
                 return;
             }
             string[] parts = vaccancy.analysis.Split('~');
-            if (!parts[0].Contains("Required Technologies:"))
+            if (!parts[0].Contains("Required Technologies:") &&
+                !parts[0].Contains("Requirements:"))
             {
                 vaccancy.analysisStatus = AnalysisStatus.Failed;
                 failedToAnalize++;
                 return;
             }
             parts[parts.Length - 1] = parts.Last().Replace("Finish","");
-            for (int i = 1; i < parts.Length; i++)
+            for (int i = 1; i < parts.Length-1; i++)
             {
                 string technologyPart = parts[i];
                 technologyPart = technologyPart.Trim(' ','\n');

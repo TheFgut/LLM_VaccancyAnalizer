@@ -43,6 +43,9 @@ namespace VaccancyAnalizer.LLM_models
                     TopK = 30,
                     TopP = 1f,
                     MinP = 0.95f,
+                    FrequencyPenalty = 0,
+                    PresencePenalty = 0,
+                    TypicalP = 1,
                     RepeatPenalty = 1.3f,
                 }
             };
@@ -73,7 +76,7 @@ namespace VaccancyAnalizer.LLM_models
                 onTokenAppeared?.Invoke("Skipped.");
                 return AnalysisStatus.Skipped;
             }
-            string input = $"### Instruction:\n{instructions.instructionPromt}\n\n### Input:\n{userInput}\n\n### Response:\n";//alpaca
+            string input = $"{instructions.instructionPromt}\n\n### Instruction:\n{userInput}\n\n### Response:\n";//alpaca
             //string input = $"<s>[INST] <<SYS>>{instructions.instructionPromt}\n<</SYS>>\n{userInput}\n\n[/INST]";
             //string input = instructions.instructionPromt + "[/INST]";
             await foreach (var text in executor.InferAsync(input, inferenceParams))
