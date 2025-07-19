@@ -26,7 +26,13 @@ namespace CryptoAI_Upgraded.DataSaving
             return configData.dataStrings.GetValueOrDefault(key);
         }
 
-        public string GetStrinOrDefault(string key, string defaultValue)
+        public T GetEnumOrDefault<T>(string key, T def) where T : Enum
+        {
+            string? value = configData.dataStrings.GetValueOrDefault(key);
+            return value == null ? def : (T)Enum.Parse(typeof(T), value);
+        }
+
+        public string GetStringOrDefault(string key, string defaultValue)
         {
             if (configData.dataStrings.TryGetValue(key, out var value)) return value;
             return defaultValue;
@@ -134,6 +140,19 @@ namespace CryptoAI_Upgraded.DataSaving
                 configData.dataNumbers.Add(key, value);
             }
         }
+
+        public void SetEnum<T>(string key, T value) where T : Enum
+        {
+            if (configData.dataStrings.ContainsKey(key))
+            {
+                configData.dataStrings[key] = value.ToString();
+            }
+            else
+            {
+                configData.dataStrings.Add(key, value.ToString());
+            }
+        }
+
         public void SetObject(string key, object value)
         {
             if (configData.dataObjects.ContainsKey(key))

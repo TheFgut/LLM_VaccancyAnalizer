@@ -25,7 +25,7 @@ namespace VaccancyAnalizer.JobAnalyticsMaking
                 TranslateToEnglishCheckBox.Checked = config.GetBool("VacanciesNetLoader.Translation");
                 int? VL = config.GetInt("VacanciesNetLoader.VacanciesLimit");
                 vacanciesLimit = VL == null ? 10 : VL.Value;
-                QueryTextBox.Text = config.GetStrinOrDefault("VacanciesNetLoader.Query", "");
+                QueryTextBox.Text = config.GetStringOrDefault("VacanciesNetLoader.Query", "");
             }
             VacanciesLimitTextBox.Text = vacanciesLimit.ToString();
         }

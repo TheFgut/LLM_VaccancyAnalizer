@@ -9,17 +9,7 @@
         {
             this.vacancies = vacancies;
             this.query = query;
-            this.summary = MakeSummary(vacancies);
-        }
-
-        private Summary MakeSummary(List<JobVacancyAnalysis> vacancies)
-        {
-            Summary summary = new Summary();
-            foreach (var vaccancy in vacancies)
-            {
-                summary.AnalizeVaccancy(vaccancy);
-            }
-            return summary;
+            this.summary = new ParsedTechologiesSummary(vacancies);
         }
     }
 }

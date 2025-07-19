@@ -1,15 +1,9 @@
 ﻿using CryptoAI_Upgraded.DataSaving;
-using CsvHelper;
-using CsvHelper.Configuration;
-using VaccancyAnalizer.AnalisysSaving;
-using VaccancyAnalizer.VacanciesRequesting.DataObjects;
-using VaccancyAnalizer.LLM_models;
-using VaccancyAnalizer.LLM_models.UI;
-using VaccancyAnalizer.Translation;
 using System.Data;
-using System.Globalization;
-using System.Runtime.Intrinsics.Arm;
 using System.Text;
+using VaccancyAnalizer.AnalisysSaving;
+using VaccancyAnalizer.LLM_models;
+using VaccancyAnalizer.VacanciesRequesting.DataObjects;
 
 namespace VaccancyAnalizer.JobAnalyticsMaking
 {
@@ -20,6 +14,7 @@ namespace VaccancyAnalizer.JobAnalyticsMaking
         private VacanciesData? vacanciesData;
         private IAnalysisSaver saver;
         private string promt;
+        private AnalysisType analysisType;
         public AnalyticsMakerForm()
         {
             savableConfig = new SavableConfig(DataPaths.SavableConfigPath, "AppConfig");
@@ -33,10 +28,11 @@ namespace VaccancyAnalizer.JobAnalyticsMaking
 
             //Llama-2-7b-instruct-tuning-Q5_K_M.gguf
             //Llama-3.2-3B-Instruct-UD-Q2_K_XL.gguf
-           
-            promt = savableConfig.GetStrinOrDefault("AnalysisPromt", 
-                Prompts.defaultGenVacansionsSummaryPromt);
-            PromtTextBox.Text = promt;
+
+            analysisType = savableConfig.GetEnumOrDefault("analysisType", AnalysisType.ParseTechnologies);
+            analysisTypeSelector.DataSource = Enum.GetValues(typeof(AnalysisType));
+            analysisTypeSelector.SelectedIndex = (int)analysisType;
+            LoadSavedPromt();
             StartAnalizeBut.Enabled = false;
             vacanciesLoader1.SetConfig(savableConfig);
             vacanciesLoader1.onVacanciesLoaded += (v) =>
@@ -105,10 +101,12 @@ namespace VaccancyAnalizer.JobAnalyticsMaking
             savableConfig.Save();
         }
 
-        private void PromtTextBox_Validated(object sender, EventArgs e)
+        private void PromtTextBox_Validated(object sender, EventArgs e) => SavePromt(PromtTextBox.Text);
+
+        private void SavePromt(string promt)
         {
-            promt = PromtTextBox.Text;
-            savableConfig.SetString("AnalysisPromt", promt);
+            this.promt = promt;
+            savableConfig.SetString($"AnalysisPromt{analysisTypeSelector.SelectedItem.ToString()}", promt);
             analyticsMaker?.SetPromt(promt);
         }
 
@@ -116,6 +114,20 @@ namespace VaccancyAnalizer.JobAnalyticsMaking
         {
             if (vacanciesData != null && analyticsMaker != null)
                 StartAnalizeBut.Enabled = true;
+        }
+
+        private void analysisType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            analysisType = (AnalysisType)analysisTypeSelector.SelectedItem;
+            savableConfig.SetEnum("analysisType", analysisType);
+            LoadSavedPromt();
+        }
+
+        private void LoadSavedPromt()
+        {
+            promt = savableConfig.GetStringOrDefault($"AnalysisPromt{analysisType.ToString()}",
+                Prompts.defaultGenVacansionsSummaryPromt);
+            PromtTextBox.Text = promt;
         }
     }
 

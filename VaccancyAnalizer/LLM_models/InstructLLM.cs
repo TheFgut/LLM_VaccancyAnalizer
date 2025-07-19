@@ -76,7 +76,7 @@ namespace VaccancyAnalizer.LLM_models
                 onTokenAppeared?.Invoke("Skipped.");
                 return AnalysisStatus.Skipped;
             }
-            string input = $"{instructions.instructionPromt}\n\n### Instruction:\n{userInput}\n\n### Response:\n";//alpaca
+            string input = $"[INST]\n{instructions.instructionPromt}\n\n{userInput}[/INST]\n";//alpaca
             //string input = $"<s>[INST] <<SYS>>{instructions.instructionPromt}\n<</SYS>>\n{userInput}\n\n[/INST]";
             //string input = instructions.instructionPromt + "[/INST]";
             await foreach (var text in executor.InferAsync(input, inferenceParams))
