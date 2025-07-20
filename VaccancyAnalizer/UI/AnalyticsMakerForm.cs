@@ -1,5 +1,7 @@
 ﻿using CryptoAI_Upgraded.DataSaving;
+using LLM_test;
 using System.Data;
+using System.Diagnostics;
 using System.Text;
 using VaccancyAnalizer.AnalisysSaving;
 using VaccancyAnalizer.LLM_models;
@@ -48,16 +50,17 @@ namespace VaccancyAnalizer.JobAnalyticsMaking
         {
             StartAnalizeBut.Enabled = false;
 
-            Analysis analysis = await analyticsMaker.ProcessVacanciesData(vacanciesData,
+            Analysis analysis = await analyticsMaker.ProcessVacanciesData(vacanciesData, analysisType,
                 (progress) => progressBar1.Value = (int)(progress * 100));
 
             progressBar1.Value = 0;
             StartAnalizeBut.Enabled = true;
+            string? savePath = null;
             while (true)
             {
                 try
                 {
-                    saver.SaveAnalysis(analysis);
+                    savePath = saver.SaveAnalysis(analysis);
                     break;
                 }
                 catch (IOException)
@@ -68,33 +71,26 @@ namespace VaccancyAnalizer.JobAnalyticsMaking
                     if (result == DialogResult.Cancel) break;
                 }
             }
-            MessageBox.Show("Analysis completed", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (savePath == null) return;
+            Helpers.ShowDialogueWindowWithOKAndCustomButton("Analysis completed", "Success", "Open file", 
+                () =>
+            {
+                try
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo
+                    {
+                        FileName = savePath,
+                        UseShellExecute = true
+                    };
+                    Process.Start(psi);
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show($"Failed to open file\n{ex.Message}", "Fail",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            });
         }
-
-        //private void Save(List<JobVacancyAnalysis> vacancies)
-        //{
-        //    var config = new CsvConfiguration(CultureInfo.InvariantCulture)
-        //    {
-        //        NewLine = "\r\n",
-        //        // Символ кавычки и символ экранирования — оба "
-        //        Quote = '"',
-        //        Escape = '"',
-        //        // Режим экранирования по RFC 4180
-        //        Mode = CsvMode.Escape
-        //    };
-        //    name = name.Replace('\n', '_');
-        //    using (var writer = new StreamWriter($"{DataPaths.VacanciesDataPath}{name}.csv"))
-        //    using (var csv = new CsvWriter(writer, config))
-        //    {
-        //        csv.WriteHeader<JobVacancyAnalysis>();
-        //        csv.NextRecord();
-        //        foreach (var vacancie in vacancies)
-        //        {
-        //            csv.WriteRecord(vacancie);
-        //            csv.NextRecord();
-        //        }
-        //    }
-        //}
 
         private void AnalyticsMakerForm_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -141,7 +137,7 @@ namespace VaccancyAnalizer.JobAnalyticsMaking
             this.llm = llm;
         }
 
-        public async Task<Analysis> ProcessVacanciesData(VacanciesData data,
+        public async Task<Analysis> ProcessVacanciesData(VacanciesData data, AnalysisType analysisType,
             Action<float>? onProgressChanged = null)
         {
             List<JobVacancyAnalysis> vacancies = data.vacancies.Select(v => v.MakeAnalysisObj()).ToList();
@@ -157,7 +153,7 @@ namespace VaccancyAnalizer.JobAnalyticsMaking
                 vaccancy.analysisStatus = status;
                 llm.ResetLLM();
             }
-            return new Analysis(vacancies, data.query);
+            return new Analysis(vacancies, data.query, analysisType);
         }
 
         public void SetPromt(string? promt)

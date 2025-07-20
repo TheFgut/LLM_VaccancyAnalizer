@@ -13,7 +13,7 @@ namespace VaccancyAnalizer.AnalisysSaving
             this.savePath = savePath;
         }
 
-        public void SaveAnalysis(Analysis analysis, bool overwrite = true)
+        public string SaveAnalysis(Analysis analysis, bool overwrite = true)
         {
             string filePath = $"{savePath}\\{analysis.query}.docx";
             string directory = Path.GetDirectoryName(filePath)!;
@@ -41,6 +41,7 @@ namespace VaccancyAnalizer.AnalisysSaving
             }
 
             mainPart.Document.Save();
+            return filePath;
         }
 
         private static void DescribeObject(Body body, string title, object objToDescribe)

@@ -27,7 +27,7 @@ namespace VaccancyAnalizer.LLM_models
             parameters = new ModelParams(modelPath)
             {
                 ContextSize = ContextSize,
-                GpuLayerCount = 28
+                GpuLayerCount = 28,
             };
 
             model = LLamaWeights.LoadFromFile(parameters);
@@ -39,14 +39,15 @@ namespace VaccancyAnalizer.LLM_models
                 AntiPrompts = antiPrompts,
                 SamplingPipeline = new DefaultSamplingPipeline()
                 {
-                    Temperature = 0.8f,//creativity
-                    TopK = 30,
+                    Temperature = 0.1f,//creativity
+                    TopK = 20,
                     TopP = 1f,
-                    MinP = 0.95f,
+                    MinP = 0.97f,
                     FrequencyPenalty = 0,
                     PresencePenalty = 0,
                     TypicalP = 1,
                     RepeatPenalty = 1.3f,
+                    Seed = 1337
                 }
             };
 
@@ -76,7 +77,7 @@ namespace VaccancyAnalizer.LLM_models
                 onTokenAppeared?.Invoke("Skipped.");
                 return AnalysisStatus.Skipped;
             }
-            string input = $"[INST]\n{instructions.instructionPromt}\n\n{userInput}[/INST]\n";//alpaca
+            string input = $"[INST]\n{instructions.instructionPromt}\n[/INST]\n\n### Instruction:\n{userInput}\n\n### Response:\n";//alpaca
             //string input = $"<s>[INST] <<SYS>>{instructions.instructionPromt}\n<</SYS>>\n{userInput}\n\n[/INST]";
             //string input = instructions.instructionPromt + "[/INST]";
             await foreach (var text in executor.InferAsync(input, inferenceParams))

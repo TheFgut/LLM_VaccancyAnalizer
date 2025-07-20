@@ -5,9 +5,10 @@
         public Dictionary<string, int> tehnologiesUsage { get; private set; }
         public int skipped { get; private set; }
         public int failedToAnalize { get; private set; }
-        public ParsedTechologiesSummary(List<JobVacancyAnalysis> vacancies) : base(vacancies)
+        public ParsedTechologiesSummary(List<JobVacancyAnalysis> vacancies)
         {
             tehnologiesUsage = new Dictionary<string, int>();
+            GenerateSummary(vacancies);
         }
 
         protected override void GenerateSummary(List<JobVacancyAnalysis> vaccancies)

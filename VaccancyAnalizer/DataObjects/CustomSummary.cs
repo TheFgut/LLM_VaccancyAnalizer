@@ -3,8 +3,9 @@
     public class CustomSummary : Summary
     {
         public int skipped { get; private set; }
-        public CustomSummary(List<JobVacancyAnalysis> vacancies) : base(vacancies)
+        public CustomSummary(List<JobVacancyAnalysis> vacancies)
         {
+            GenerateSummary(vacancies);
         }
 
         protected override void GenerateSummary(List<JobVacancyAnalysis> vaccancies)
