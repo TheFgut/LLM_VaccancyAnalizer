@@ -13,7 +13,7 @@ namespace VaccancyAnalizer.LLM_models
 
         private string modelPath;
 
-        private InstructExecutor executor;
+        private InteractiveExecutor executor;
         private LLMInstructions instructions;
         private InferenceParams inferenceParams;
         private LLamaContext context;
@@ -22,7 +22,7 @@ namespace VaccancyAnalizer.LLM_models
 
         public InstructLLM(string path, List<string>? antiPrompts = null, LLMInstructions? instructions = null)
         {
-            if (antiPrompts == null) antiPrompts = ["Finish", "###"];
+            if (antiPrompts == null) antiPrompts = ["Finish", "###", "[INST]"];
             modelPath = path;
             parameters = new ModelParams(modelPath)
             {
@@ -32,21 +32,21 @@ namespace VaccancyAnalizer.LLM_models
 
             model = LLamaWeights.LoadFromFile(parameters);
             context = model.CreateContext(parameters);
-            executor = new InstructExecutor(context);
+            executor = new InteractiveExecutor(context);
             inferenceParams = new InferenceParams()
             {
                 MaxTokens = MaxAnswerLen, // No more than MaxAnswerLen tokens should appear in answer.     
                 AntiPrompts = antiPrompts,
                 SamplingPipeline = new DefaultSamplingPipeline()
                 {
-                    Temperature = 0.1f,//creativity
+                    Temperature = 0f,//creativity
                     TopK = 20,
                     TopP = 1f,
-                    MinP = 0.97f,
+                    MinP = 0.99f,
                     FrequencyPenalty = 0,
                     PresencePenalty = 0,
                     TypicalP = 1,
-                    RepeatPenalty = 1.3f,
+                    RepeatPenalty = 1.2f,
                     Seed = 1337
                 }
             };
@@ -77,7 +77,7 @@ namespace VaccancyAnalizer.LLM_models
                 onTokenAppeared?.Invoke("Skipped.");
                 return AnalysisStatus.Skipped;
             }
-            string input = $"[INST]\n{instructions.instructionPromt}\n[/INST]\n\n### Instruction:\n{userInput}\n\n### Response:\n";//alpaca
+            string input = $"{instructions.instructionPromt}\n\n[INST]{userInput}[/INST]\n\n";
             //string input = $"<s>[INST] <<SYS>>{instructions.instructionPromt}\n<</SYS>>\n{userInput}\n\n[/INST]";
             //string input = instructions.instructionPromt + "[/INST]";
             await foreach (var text in executor.InferAsync(input, inferenceParams))
@@ -92,7 +92,7 @@ namespace VaccancyAnalizer.LLM_models
             //session.LoadSession(initialState);
             context?.Dispose();
             context = model.CreateContext(parameters);
-            executor = new InstructExecutor(context);
+            executor = new InteractiveExecutor(context);
             //session = new(executor, instructions.generateChatHistory());
         }
 
